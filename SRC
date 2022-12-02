@@ -1,1 +1,67 @@
+import arcade
+import math
 
+BREDDE = 1200
+HOEJDE = 600
+SPORLAENGDE_LINJE = 200
+SPORLAENGDE_CIRKEL = 200
+FARVE_LINJE = arcade.csscolor.YELLOW
+FARVE_CIRKEL = arcade.csscolor.BLUE
+RADIUS = 50
+RX = 130
+
+def ret_linje(tid, stationaert_punkt, retningsvektor):
+    x_0, y_0 = stationaert_punkt
+    r_x, r_y = retningsvektor
+    x = x_0 + r_x * tid
+    y = y_0 + r_y * tid
+    return x, y
+
+
+
+def cirkel(tid, centrum, radius, vinkelhastighed, fase=0):
+    x_c, y_c = centrum
+    x = x_c + radius * math.cos(vinkelhastighed * tid + fase)
+    y = y_c + radius * math.sin(vinkelhastighed * tid + fase)
+    return x, y
+
+
+
+def tegn(delta_tid):
+    arcade.start_render()
+    x_linje, y_linje = ret_linje(tegn.tid, (0, 200), (RX, 0))
+    arcade.draw_circle_filled(x_linje, y_linje, 5, FARVE_LINJE)
+    if len(tegn.spor_linje) > SPORLAENGDE_LINJE:
+        tegn.spor_linje.pop(0)
+    for punkt in tegn.spor_linje:
+        arcade.draw_circle_filled(*punkt, 2, FARVE_LINJE)
+
+
+    x_cirkel, y_cirkel = cirkel(tegn.tid, (x_linje, y_linje), RADIUS, -RX/RADIUS, 0)
+    arcade.draw_circle_filled(x_cirkel, y_cirkel, 5, FARVE_CIRKEL)
+    if len(tegn.spor_cirkel) > SPORLAENGDE_CIRKEL:
+        tegn.spor_cirkel.pop(0)
+    for punkt in tegn.spor_cirkel:
+        arcade.draw_circle_filled(*punkt, 2, FARVE_CIRKEL)
+    if (x_linje >= 0 and x_linje < BREDDE) and (y_linje >= 0 and y_linje <= HOEJDE):
+        tegn.tid += delta_tid * 1
+        tegn.spor_linje.append((x_linje, y_linje))
+        tegn.spor_cirkel.append((x_cirkel, y_cirkel))
+    else:
+        tegn.tid = tegn.tid
+
+
+def main():
+    arcade.open_window(BREDDE, HOEJDE)
+
+    arcade.set_background_color(arcade.csscolor.LIGHT_SKY_BLUE)
+
+    tegn.tid = 0.0
+    tegn.spor_linje = list()
+    tegn.spor_cirkel = list()
+    arcade.schedule(tegn, 1 / 60)
+
+    arcade.run()
+
+
+main()
